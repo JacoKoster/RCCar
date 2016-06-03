@@ -4,6 +4,7 @@ Car:
 - Connect the car to a RPI
 - Use a library (johnny-five or more low-level) to setup the steering and Speed Controller
 - Have a "virtual" car object to which the car responds to, which has information about the steering-degree and current set speed. Any changes to this virtual car, changes the actual car. (This makes it possible to decouple the work on the car and the actual steering)
+- http://www.berryterminal.com/doku.php/berryboot ?
 
 Lane Assist:
 - Get image (stream) from the camera ( https://github.com/troyth/node-raspicam )
