@@ -19,3 +19,4 @@ Monitoring:
 Next steps:
 - Car detection, with radar or use the camera?
 - Making the car bad-ass, lighting, cover, stickers, sound, etc :)
+- https://www.conrad.nl/nl/reely-110-body-audi-s5-coupe-geverfd-gesneden-beplakt-237992.html?sc.ref=Product%20Details
