@@ -21,3 +21,13 @@ Next steps:
 - Car detection, with radar or use the camera?
 - Making the car bad-ass, lighting, cover, stickers, sound, etc :)
 - https://www.conrad.nl/nl/reely-110-body-audi-s5-coupe-geverfd-gesneden-beplakt-237992.html?sc.ref=Product%20Details
+
+
+Links:
+
+- https://www.sitepoint.com/face-detection-nodejs-opencv/
+- http://www.pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/
+- https://github.com/peterbraden/node-opencv
+- https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspistill.md
+- https://github.com/silvanmelchior/userland/tree/master/host_applications/linux/apps/raspicam
+- http://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html
