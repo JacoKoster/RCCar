@@ -31,3 +31,5 @@ Links:
 - https://www.raspberrypi.org/documentation/usage/camera/raspicam/raspistill.md
 - https://github.com/silvanmelchior/userland/tree/master/host_applications/linux/apps/raspicam
 - http://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html
+- http://www.vision.caltech.edu/malaa/research/lane-detection/
+- http://www.vision.caltech.edu/malaa/software/research/caltech-lane-detection/
