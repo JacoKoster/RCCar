@@ -1,5 +1,8 @@
 # double-meh
 
+Design:
+https://www.lucidchart.com/invitations/accept/2f5559df-391a-4dcc-befb-66869472d291
+
 Car: 
 - Connect the car to a RPI
 - Use a library (johnny-five or more low-level) to setup the steering and Speed Controller
