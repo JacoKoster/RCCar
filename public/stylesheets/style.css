@@ -1,0 +1,135 @@
+html {
+    height:100%;
+}
+
+body {
+    background:#000000;
+    color:#fffdfe;
+    height:100%;
+    box-sizing:border-box;
+    padding:16px;
+}
+
+.icons {
+    position:absolute;
+    right:0;
+    top:0;
+    width: 36px;
+}
+img.icon {
+    opacity:0;
+    width: 36px;
+}
+
+.icon.blinking {
+    animation: blink 1s steps(2) infinite;
+}
+
+@keyframes blink {
+    to {
+        opacity: 0.3;
+    }
+}
+@-webkit-keyframes blink {
+    to {
+        opacity: 1;
+    }
+}
+
+.icon.dimmed {
+    opacity: 0.3;
+}
+
+.icon.on {
+    opacity: 1;
+}
+
+.signal-container {
+    margin:0 auto;
+    overflow:hidden;
+    text-align:center;
+    width:40%;
+}
+.signal-container .arrow-right {
+    float:right;
+}
+.signal-container .arrow-left {
+    float:left;
+}
+
+.center-container {
+    position:relative;
+}
+
+.power-meter {
+    position:absolute;
+    left:20px;
+    margin-bottom:-60px;
+    bottom:50%;
+}
+
+.power-meter svg {
+    transform:rotate(180deg);
+}
+.speed-meter {
+    margin:0 auto;
+    width:240px;
+}
+
+.speed-meter svg {
+    transform:rotate(180deg);
+}
+.speed-meter text {
+    color: #fffdfe;
+    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+button {
+    color:black;
+}
+
+img.power-button {
+    height:50px;
+    width:50px;
+    bottom:25px;
+    right:25px;
+    position:absolute;
+}
+img.stop-button {
+    height:48px;
+    width:48px;
+    bottom:16px;
+    left:16px;
+    position:absolute;
+}
+
+.controller {
+    border:1px solid #8ac4ec;
+    bottom:0;
+    height:150px;
+    position:absolute;
+    right:0;
+    width:150px;
+}
+.controller::before {
+    background:#8ac4ec;
+    position:absolute;
+    content: " ";
+    width:150px;
+    height:1px;
+    bottom:74px;
+    right:0;
+}
+.controller::after {
+    border: 1px solid #8ac4ec;
+    border-bottom-width:0;
+    border-top-width:0;
+    position:absolute;
+    content: " ";
+    width:48px;
+    height:150px;
+    bottom:0;
+    right:50px;
+}

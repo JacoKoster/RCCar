@@ -1,0 +1,12 @@
+{
+    "boardType" : "raspi",
+    "logLevel" : "DEBUG",
+    "car": {
+        "frontLightPin": "",
+        "backLightPin": "",
+        "leftLightPin": "",
+        "rightLightPin": "",
+        "motor": "",
+        "steering": ""
+    }
+}
