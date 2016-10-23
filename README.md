@@ -36,3 +36,5 @@ Links:
 - http://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html
 - http://www.vision.caltech.edu/malaa/research/lane-detection/
 - http://www.vision.caltech.edu/malaa/software/research/caltech-lane-detection/
+- https://www.raspberrypi.org/forums/viewtopic.php?t=68247&p=498140
+``` sudo modprobe bcm2835-v4l2 # to load it and create /dev/video0 ```
