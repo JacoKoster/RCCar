@@ -5,7 +5,7 @@ var Logger = require('./logger.js');
 
 var boardOptions = {};
 
-if(Config.boardType == "raspi") {
+if (Config.boardType == "raspi") {
     var raspio = require('raspi-io');
     boardOptions = {
         io: new raspio(),
@@ -15,117 +15,128 @@ if(Config.boardType == "raspi") {
 
 var board = new five.Board(boardOptions);
 
-var Car = function() {
-    this.brakeThreshold = 30;
-    this.lightsOn = false;
-    this.leftLightOn = false;
-    this.rightLightOn = false;
-	this.alarm = false;
+var Car = function () {
     this.speed = 0;
     this.emitter = new events.EventEmitter;
 
 };
 
-Car.prototype = {
+Car.prototype = {};
 
-};
+var theCar = new Car();
 
-var theCar = new Car() ;
+board.on('ready', function () {
+    const ENGINE_MIN = 43,
+        ENGINE_MAX = 93,
+        BRAKE_TIME = 900,
+        BRAKE_INTERVAL = 300,
+        ACCELERATION_TIME = 1000,
+        ACCELERATION_INTERVAL = 200;
 
-board.on('ready', function() {
-    var frontLights = new five.Led(Config.car.frontLightPin);
-    var backLights = new five.Led(Config.car.backLightPin);
-    var leftLight = new five.Led(Config.car.leftLightPin);
-    var rightLight = new five.Led(Config.car.rightLightPin);
-    var steerValue = null;
+    var motor, steering;
 
-    var motor = new five.ESC({
-        pin: Config.car.motor,
-        neutral: 50
-    });
+    init();
 
-    var steering = new five.Servo({
-        pin: Config.car.steering,
-        center: true
-    });
-
-    var brake = function() {
-		backLights.blink(70);
-		
-        board.wait(1000, function() {
-            backLights.stop();
-            backLights[theCar.lightsOn ? "off" : "on"]();
+    function init() {
+        motor = new five.ESC({
+            pin: Config.car.motor,
+            device: 'FORWARD_REVERSE',
+            range: [0, ENGINE_MAX],
+            neutral: ENGINE_MIN
         });
-    };
 
+        steering = new five.Servo({
+            pin: Config.car.steering,
+            center: true
+        });
 
-    theCar.emitter.on('SetAlarm', function() {
-		Logger.debug('set Alarm');
+        //let everyone know the car is ready.
+        theCar.emitter.emit('CarReady');
+    }
 
-		if(!this.alarm) {
-            rightLight.blink(300);
-            leftLight.blink(300);
-		}else{
-            rightLight.stop();
-            leftLight.stop();
-		}
-		this.alarm = !this.alarm;
-    });
-	
-    //theCar.emitter.on('SetLeft', function(value) {
-		//Logger.debug('Left Light!');
-		//BlinkLeft();
-    //
-    //});
-    //
-    //
-    //theCar.emitter.on('SetRight', function() {
-		//Logger.debug('Right Light!');
-		//BlinkRight();
-    //});
-
-    theCar.emitter.on('SwitchLights', function() {
-        theCar.lightsOn = !theCar.lightsOn;
-
-        Logger.debug(theCar.lightsOn);
-
-        frontLights[theCar.lightsOn ? "off" : "on"]();
-		backLights[theCar.lightsOn ? "off" : "on"]();
+    theCar.emitter.on('Stop', function () {
+        stop();
     });
 
-    theCar.emitter.on('Stop', function() {
-        brake();
-        theCar.speed = 0;
-        motor.speed(motor.neutral, 'forward');
+    theCar.emitter.on('Go', function () {
+        go();
     });
 
-    theCar.emitter.on('SetSteering', function(value) {
+    theCar.emitter.on('SetSteering', function (value) {
         Logger.debug('Steering value: ' + value);
         var direction = (value + 50) / 100 * 180;
 
         steering.to(direction);
     });
 
-    theCar.emitter.on('SetMotorSpeed', function(val) {
-        //if(value < theCar.speed - theCar.brakeThreshold) {
-        //    brake();
-        //}
+    theCar.emitter.on('SetMotorSpeed', setSpeed);
 
-        motor.speed(val, 'forward');
+    function setSpeed(value) {
+        theCar.speed = value;
 
-        theCar.speed = val;
-    });
+        var actualSpeed = translateSpeed(value);
 
-    //reset
-    //motor.reverse(0);
-    //steering.reverse(0);
-    frontLights.off().on();
-    backLights.off().on();
-    leftLight.off().on();
-    rightLight.off().on();
+        Logger.debug('Speed value: ' + actualSpeed);
+        motor.speed(actualSpeed);
+    }
 
-    //let everyone know the car is ready.
-    theCar.emitter.emit('CarReady');
+    /**
+     * Translates the speed percentage to an actual value to be sent to the ESC.
+     * @param speed Speed in percentage (0-100%)
+     * @returns {number} Translated speed value adjusted to the scale of the ESC.
+     */
+    function translateSpeed(speed) {
+        return speed / 100 * (ENGINE_MAX - ENGINE_MIN) + ENGINE_MIN
+    }
+
+    function stop() {
+        console.log('Stopping car');
+
+        var currentSpeed = theCar.speed,
+            brakeStepSize = currentSpeed / (BRAKE_TIME / BRAKE_INTERVAL);
+
+        slowDown();
+
+        function slowDown() {
+            setTimeout(function () {
+                var newSpeed = currentSpeed - brakeStepSize;
+
+                console.log('Slowing down to: ' + newSpeed);
+
+                setSpeed(newSpeed);
+                currentSpeed = theCar.speed;
+
+                if (currentSpeed > 0) {
+                    slowDown();
+                }
+            }, BRAKE_INTERVAL);
+        }
+    }
+
+    function go() {
+        console.log('Speeding car');
+
+        var MAX_SPEED = 100,
+            currentSpeed = theCar.speed,
+            accelerateStepSize = MAX_SPEED / (ACCELERATION_TIME / ACCELERATION_INTERVAL);
+
+        speedUp();
+
+        function speedUp() {
+            setTimeout(function () {
+                var newSpeed = currentSpeed + accelerateStepSize;
+
+                console.log('Speeding up to: ' + newSpeed);
+
+                setSpeed(newSpeed);
+                currentSpeed = theCar.speed;
+
+                if (currentSpeed < MAX_SPEED) {
+                    speedUp();
+                }
+            }, ACCELERATION_INTERVAL);
+        }
+    }
 });
 
 module.exports = theCar;
