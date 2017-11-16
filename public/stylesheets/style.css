@@ -121,3 +121,16 @@ img.stop-button {
   right: 0;
   width: 200px;
 }
+
+.images-container {
+  left:0;
+  position:absolute;
+  top:50px;
+}
+
+.images-container img {
+  width: 100%;
+}
+.images-container .video-fps {
+  position: absolute;
+}

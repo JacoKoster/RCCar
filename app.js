@@ -5,8 +5,25 @@ var eventHandlers = require('./eventHandlers.js').getInstance();
 var io = require('socket.io')(http);
 var Logger = require('./logger.js');
 
+const Brain = require('./theBrain.js');
 
 app.use(express.static('public'));
+
+eventHandlers.io = io;
+
+//computer action
+Brain.emitter.on('correction', function (data) {
+    Logger.debug('Received action correction:' + data.correction);
+
+    io.emit('brainEvent', data);
+    eventHandlers.setSteering(data.correction);
+});
+Brain.emitter.on('start', function () {
+    Logger.debug('Received action start');
+//    io.emit('brainEvent', 'go');
+//    eventHandlers.go();
+});
+Brain.startDetection();
 
 io.on('connection', function (socket) {
     eventHandlers.connected(socket);
@@ -27,8 +44,7 @@ io.on('connection', function (socket) {
         } catch(error) {
             Logger.error(error);
         }
-    })
-
+    });
 });
 
 app.get('/', function (req, res) {
