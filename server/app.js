@@ -20,7 +20,7 @@ io.on('connection', function (socket) {
         Logger.debug('Received action ' + parameters.type);
         Logger.debug('Received value ' + parameters.value);
         try {
-            eventHandlers[parameters.type](socket, parameters.value);
+            eventHandlers[parameters.type](parameters.value);
         } catch(error) {
             Logger.error(error);
         }
