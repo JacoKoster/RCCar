@@ -1,11 +1,10 @@
-var Config = require('./config.json');
+const Config = require('./config.json');
 
-var log = function (level, message) {
-    var threshold = Logger.levels[Config.logLevel] || Logger.levels.ERROR;
+const log = function (level, message) {
+    let threshold = Logger.levels[Config.logLevel] || Logger.levels.ERROR;
 
     if (level && message && level.value >= threshold.value) {
-        var levelName = level.name.toLowerCase(),
-            fullMessage = level.name + ' | ' + message;
+        let levelName = level.name.toLowerCase(), fullMessage = level.name + ' | ' + message;
 
         if (console[levelName]) {
             console[levelName](fullMessage);
@@ -13,7 +12,6 @@ var log = function (level, message) {
             console.log(fullMessage);
         }
     }
-
 };
 
 Logger = {

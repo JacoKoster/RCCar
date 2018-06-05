@@ -1,9 +1,8 @@
 const Logger = require('./logger.js');
-const events = require('events');
 const Config = require('./config.json');
 const SerialPort = require('serialport');
 
-var EventHandlers = function () {
+const EventHandlers = function () {
     this.arduino = new SerialPort(Config.serialport, {
         parser: SerialPort.parsers.readline('\n')
     });
@@ -32,12 +31,7 @@ EventHandlers.prototype = {
             Logger.debug('Port closed :-(');
         });
         this.arduino.on('data', function (data) {
-            if(data == "PING") {
-                Logger.debug('Received Ping');
-                return self.sendArduino("PONG");
-            }
-
-            var message = JSON.parse(data);
+            let message = JSON.parse(data);
             if(message.error) {
                 return Logger.error(message);
             }
@@ -63,13 +57,11 @@ EventHandlers.prototype = {
     },
 
     disconnected: function (socket) {
-        var remoteAddress = socket.conn.remoteAddress;
+        let remoteAddress = socket.conn.remoteAddress;
 
-        var i = this.allClients.indexOf(socket);
+        let i = this.allClients.indexOf(socket);
         this.allClients.splice(i, 1);
 
-        // Car.emitter.emit('Stop');
-        // Car.emitter.emit('SetSteering', 0);
         this.sendArduino('steer 0');
         this.sendArduino('speed 90');
 
@@ -77,7 +69,6 @@ EventHandlers.prototype = {
         Logger.debug(remoteAddress + ' disconnected');
     },
     stop: function () {
-//        Car.emitter.emit('Stop');
 //        this.sendArduino("steer 0");
         this.sendArduino('speed 90');
 
@@ -85,8 +76,6 @@ EventHandlers.prototype = {
     },
     go: function () {
         this.sendArduino('speed 107');
-
-        //Car.emitter.emit('Go');
     },
     setSpeed: function (value) {
         if(!this.arduinoConnected) {
@@ -95,8 +84,7 @@ EventHandlers.prototype = {
 
         this.sendArduino('speed ' + value);
 
-        //Car.emitter.emit('SetMotorSpeed', value * 1);
-        this.io.emit('speedEvent', value * 1);
+        this.io.emit('speedEvent', parseInt(value));
 
         Logger.debug('setSpeed event handler: ' + value);
     },
@@ -106,9 +94,7 @@ EventHandlers.prototype = {
         }
 
         this.sendArduino('steer ' + value);
-
-        //Car.emitter.emit('SetSteering', value * 1);
-        this.io.emit('steeringEvent', value * 1);
+        this.io.emit('steeringEvent', parseInt(value));
 
         Logger.debug('steering event handler: ' + value);
     }
