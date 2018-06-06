@@ -17,6 +17,8 @@ io.on('connection', function (socket) {
     Logger.debug('Total clients: ' + eventHandlers.allClients.length);
 
     if(!webcamTimer) {
+        Logger.info('first client connected, starting cam updater');
+
         webcamTimer = setTimeout(webcam, 1000);
     }
 
@@ -24,6 +26,7 @@ io.on('connection', function (socket) {
         eventHandlers.disconnected(socket);
 
         if (eventhandlers.allClients.length === 0) {
+            Logger.info('everybody is gone, lets stop doing things...');
             clearTimeout(webcamTimer);
             webcamTimer = null;
         }
