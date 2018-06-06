@@ -8,7 +8,7 @@ const Logger = require('./logger.js');
 
 //const Brain = require('./theBrain.js');
 
-const serverSocket = clientIo(config.server);
+const serverSocket = clientIo(config.server, { autoConnect : false, transports: ['websocket'] });
 
 app.use(express.static('public'));
 
@@ -30,18 +30,34 @@ app.use(express.static('public'));
 //we shall be using this to also be a client... and use the brain
 let serverConnected = false;
 
-serverSocket.on('connection', function(socket) {
-    Logger.debug('connected to:' + config.server);
+serverSocket.on('connect', function() {
+    Logger.debug(`connected to: ${config.server}`);
     serverConnected = true;
-
-    socket.on('imageUpdate', function( data ) {
-        Logger.info('got image update!');
-    });
-
-    socket.on('disconnect', function() {
-        serverConnected = false;
-    });
 });
+serverSocket.on('disconnect', function() {
+    serverConnected = false;
+});
+function socketError( error ) {
+    if(error) {
+        Logger.error(error);
+    } else {
+        Logger.error('I think the pipe is broken');
+    }
+}
+
+serverSocket.on('connect_error', socketError);
+serverSocket.on('connect_tiemout', socketError);
+serverSocket.on('reconnect_error', socketError);
+serverSocket.on('error', socketError);
+
+
+serverSocket.on('imageUpdate', function( data ) {
+    Logger.info('got image update!');
+});
+
+
+
+serverSocket.open();
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
