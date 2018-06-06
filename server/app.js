@@ -48,15 +48,15 @@ var webcam = function() {
 //Needs to have fswebcam installed
     Logger.info('calling webcam');
     childProcess.exec("fswebcam -q -d /dev/video0 -r 640x480 -S 10 --jpeg 90 --no-banner --save '-' | base64", {maxBuffer: 640 * 480}, receivedFrame);
-
-    if(webcamTimerOn) {
-        setTimeout(webcam, 500);
-    }
 };
 var receivedFrame = function (err, stdout, stderr) {
     if (err || stderr) {
         Logger.error(err || stderr);
     }
+    if(webcamTimerOn) {
+        setTimeout(webcam, 500);
+    }
+
     Logger.info('sending new image update');
     io.local.emit('imageUpdate', stdout);
     //stdout;
