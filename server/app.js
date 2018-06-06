@@ -5,7 +5,7 @@ const io = require('socket.io')(3000);
 const Logger = require('./logger.js');
 
 eventHandlers.io = io;
-let webcamTimer = null;
+let webcamTimerOn = false;
 
 io.on('connection', function (socket) {
     eventHandlers.connected(socket);
@@ -19,16 +19,16 @@ io.on('connection', function (socket) {
     if(!webcamTimer) {
         Logger.info('first client connected, starting cam updater');
 
-        webcamTimer = setTimeout(webcam, 1000);
+        webcamTimerOn = true;
+        webcam();
     }
 
     socket.on('disconnect', function() {
         eventHandlers.disconnected(socket);
 
-        if (eventhandlers.allClients.length === 0) {
+        if (eventHandlers.allClients.length === 0) {
             Logger.info('everybody is gone, lets stop doing things...');
-            clearTimeout(webcamTimer);
-            webcamTimer = null;
+            webcamTimerOn = false;
         }
     });
 
@@ -46,14 +46,16 @@ io.on('connection', function (socket) {
 
 var webcam = function() {
 //Needs to have fswebcam installed
+    Logger.info('calling webcam');
     childProcess.exec("fswebcam -q -d /dev/video0 -r 640x480 -S 10 --jpeg 90 --no-banner --save '-' | base64", {maxBuffer: 640 * 480}, receivedFrame);
+    setTimeout(webcam, 500);
 };
 var receivedFrame = function (err, stdout, stderr) {
     if (err || stderr) {
         console.log(err || stderr);
     }
-
-    io.sockets.emit('imageUpdate', stdout);
+    Logger.info('sending new image update');
+    io.local.emit('imageUpdate', stdout);
     //stdout;
 };
 Logger.debug('listening on *:3000');
