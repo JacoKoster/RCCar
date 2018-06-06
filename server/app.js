@@ -16,7 +16,7 @@ io.on('connection', function (socket) {
     Logger.debug(remoteAddress + ' connected with user-agent ' + userAgent);
     Logger.debug('Total clients: ' + eventHandlers.allClients.length);
 
-    if(!webcamTimer) {
+    if(!webcamTimerOn) {
         Logger.info('first client connected, starting cam updater');
 
         webcamTimerOn = true;
@@ -48,11 +48,14 @@ var webcam = function() {
 //Needs to have fswebcam installed
     Logger.info('calling webcam');
     childProcess.exec("fswebcam -q -d /dev/video0 -r 640x480 -S 10 --jpeg 90 --no-banner --save '-' | base64", {maxBuffer: 640 * 480}, receivedFrame);
-    setTimeout(webcam, 500);
+
+    if(webcamTimerOn) {
+        setTimeout(webcam, 500);
+    }
 };
 var receivedFrame = function (err, stdout, stderr) {
     if (err || stderr) {
-        console.log(err || stderr);
+        Logger.error(err || stderr);
     }
     Logger.info('sending new image update');
     io.local.emit('imageUpdate', stdout);
