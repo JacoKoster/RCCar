@@ -1,4 +1,5 @@
 {
     "logLevel" : "DEBUG",
-    "serialport" : "/dev/tty1"
+    "serialport" : "/dev/tty1",
+    "ft_useArduino" : false
 }

@@ -9,7 +9,9 @@ const EventHandlers = function () {
 
     this.allClients = [];
 
-    this.arduinoConnect();
+    if(Config.ft_useArduino) {
+        this.arduinoConnect();
+    }
 };
 
 EventHandlers.prototype = {

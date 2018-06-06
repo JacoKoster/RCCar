@@ -58,7 +58,7 @@ var receivedFrame = function (err, stdout, stderr) {
     }
 
     Logger.info('sending new image update');
-    io.local.emit('imageUpdate', stdout);
+    io.emit('imageUpdate', stdout);
     //stdout;
 };
 Logger.debug('listening on *:3000');

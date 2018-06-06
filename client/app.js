@@ -35,7 +35,7 @@ serverSocket.on('connection', function(socket) {
     serverConnected = true;
 
     socket.on('imageUpdate', function( data ) {
-        console.log('got image update!');
+        Logger.info('got image update!');
     });
 
     socket.on('disconnect', function() {
