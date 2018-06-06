@@ -1,4 +1,6 @@
-var socket = io();
+var carServer = "http://192.168.178.200:3000";
+
+var socket = io(carServer);
 
 var controller = false;
 var powerButton = $(".icon.power-button");
@@ -25,6 +27,11 @@ socket.on('connect_error', function () {
     engineLight.addClass('on blinking');
     updatePower(0);
     updateProgress(0);
+});
+
+socket.on('imageUpdate', function( data ) {
+    console.log('got image update!');
+    videoElement.attr('src', "data:image/jpg;base64," + data);
 });
 
 socket.on('dataReceived', function (data) {

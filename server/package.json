@@ -6,7 +6,9 @@
     "start": "node ./app.js"
   },
   "dependencies": {
+    "node-webcam": "^0.4.3",
     "serialport": "^4.0.7",
-    "socket.io": "^1.7.4"
+    "socket.io": "^1.7.4",
+    "v4l2camera": "^1.0.4"
   }
 }
