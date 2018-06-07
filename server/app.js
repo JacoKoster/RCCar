@@ -1,5 +1,4 @@
-const childProcess = require('child_process');
-
+const sharp = require('sharp');
 const eventHandlers = require('./eventHandlers.js').getInstance();
 const io = require('socket.io')(3000);
 const Logger = require('./logger.js');
@@ -44,21 +43,30 @@ io.on('connection', function (socket) {
     });
 });
 
-var webcam = function() {
-//Needs to have fswebcam installed
-    Logger.info('calling webcam');
-    childProcess.exec("fswebcam -q -d /dev/video0 -r 640x480 -S 10 --jpeg 90 --no-banner --save '-' | base64", {maxBuffer: 640 * 480}, receivedFrame);
-};
-var receivedFrame = function (err, stdout, stderr) {
-    if (err || stderr) {
-        Logger.error(err || stderr);
-    }
-    if(webcamTimerOn) {
-        setTimeout(webcam, 500);
-    }
 
-    Logger.info('sending new image update');
-    io.emit('imageUpdate', stdout);
-    //stdout;
-};
+const cam = require('linuxcam');
+cam.start("/dev/video0", 640, 480);
+
+function webcam() {
+    //Needs to have fswebcam installed
+   
+    console.time('frame');
+    let frame = cam.frame(); // Buffer
+    console.timeEnd('frame');
+    console.time('encode');
+    sharp(frame.data, {
+        raw: {
+            width:640,
+            height:480,
+            channels:3
+        }
+    }).jpeg({
+        quality: 90
+    }).toBuffer().then(data => {
+        io.emit('imageUpdate',data.toString('base64'));
+        console.timeEnd('encode');
+    }).catch(err => {
+        console.error(err);
+    });
+}
 Logger.debug('listening on *:3000');
