@@ -43,18 +43,24 @@ io.on('connection', function (socket) {
     });
 });
 
+const v4l2camera = require('v4l2camera');
+const cam = new v4l2camera.Camera("/dev/video0");
+cam.configSet({width: 640, height: 480});
+cam.start();
+cam.capture(function loop() {
+    cam.capture(loop);
+});
 
-const cam = require('linuxcam');
-cam.start("/dev/video0", 640, 480);
 
 function webcam() {
-    //Needs to have fswebcam installed
-   
     console.time('frame');
-    let frame = cam.frame(); // Buffer
+
+    let buf = Buffer(cam.toYUYV());
+    io.emit('imageUpdateRaw', buf.toString('base64'));
+
     console.timeEnd('frame');
     console.time('encode');
-    sharp(frame.data, {
+    sharp(buf, {
         raw: {
             width:640,
             height:480,

@@ -34,3 +34,17 @@ Links:
 - http://www.vision.caltech.edu/malaa/research/lane-detection/
 - http://www.vision.caltech.edu/malaa/software/research/caltech-lane-detection/
 - https://www.raspberrypi.org/forums/viewtopic.php?t=68247&p=498140
+
+
+FFMPEG on raspi
+```
+ sudo apt-get install libx264-dev libvorbis-dev libvpx-dev
+ git clone git://source.ffmpeg.org/ffmpeg.git
+ cd ffmpeg/
+
+ sudo ./configure --arch=armel --target-os=linux --enable-gpl --enable-libvpx --enable-libx264 --enable-libvorbis --enable-nonfree
+ make -j4
+ sudo make install
+ ```
+ 
+- https://github.com/iglosiggio/nodejs-webcam-streaming
