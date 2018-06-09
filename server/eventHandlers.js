@@ -3,13 +3,12 @@ const Config = require('./config.json');
 const SerialPort = require('serialport');
 
 const EventHandlers = function () {
-    this.arduino = new SerialPort(Config.serialport, {
-        parser: SerialPort.parsers.readline('\n')
-    });
-
     this.allClients = [];
 
     if(Config.ft_useArduino) {
+        this.arduino = new SerialPort(Config.serialport, {
+            parser: SerialPort.parsers.readline('\n')
+        });
         this.arduinoConnect();
     }
 };
