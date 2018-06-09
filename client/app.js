@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
-const io = require('socket.io')(http);
 const clientIo = require('socket.io-client');
 const config = require('./config.json');
 const Logger = require('./logger.js');
@@ -37,6 +36,9 @@ serverSocket.on('connect', function() {
 serverSocket.on('disconnect', function() {
     serverConnected = false;
 });
+serverSocket.on('status', function(data) {
+    console.log(data);
+});
 function socketError( error ) {
     if(error) {
         Logger.error(error);
@@ -46,7 +48,7 @@ function socketError( error ) {
 }
 
 serverSocket.on('connect_error', socketError);
-serverSocket.on('connect_tiemout', socketError);
+serverSocket.on('connect_timeout', socketError);
 serverSocket.on('reconnect_error', socketError);
 serverSocket.on('error', socketError);
 
@@ -55,14 +57,12 @@ serverSocket.on('imageUpdate', function( data ) {
     Logger.info('got image update!');
 });
 
-
-
 serverSocket.open();
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-http.listen(3000, function () {
+http.listen(8080, function () {
     Logger.debug('listening on *:3000');
 });

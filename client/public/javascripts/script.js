@@ -9,39 +9,165 @@ var videoFPSElement = $(".video-fps");
 
 var lastTime = 0;
 
+var haveEvents = 'ongamepadconnected' in window;
+var controllers = {};
+
+
+function isMoved(axe) {
+    var axeVal = axe.toFixed(4);
+    return (axeVal > 0.0039  || axeVal < -0.0039 );
+}
+const BUTTONS = {
+    A : 0,
+    B: 1,
+    X: 2,
+    Y: 3,
+    LB: 4,
+    RB: 5,
+    LT: 6,
+    RT: 7,
+    BACK: 8,
+    START: 9,
+    LEFTTHUMB: 10,
+    RIGHTTHUMB: 11,
+    UP: 12,
+    DOWN: 13,
+    LEFT: 14,
+    RIGHT: 15
+};
+const AXES = {
+    HORIZONTAL : {
+        LEFT : 0,
+        RIGHT : 2
+    },
+    VERTICAL : {
+        LEFT: 1,
+        RIGHT : 3
+    }
+};
+var turbo = false;
+
+function updateStatus() {
+    if (!haveEvents) {
+        scangamepads();
+    }
+    var i = 0;
+    var j;
+
+    for (j in controllers) {
+        var controller = controllers[j];
+        if(!controller.cache) {
+            controller.cache = {
+                axes : {},
+                buttons : {}
+            };
+        }
+        for (i = 0; i < controller.buttons.length; i++) {
+            var val = controller.buttons[i];
+            var pressed = val == 1.0;
+            if (typeof(val) === "object") {
+                pressed = val.pressed;
+                val = val.value;
+            }
+            if (controller.cache.buttons[i] !== pressed) {
+                console.log(`${i} button change to ${pressed} `);
+                controller.cache.buttons[i] = pressed;
+
+                if(i === BUTTONS.START && pressed === true) {
+                    socket.emit('action', {type: 'init'});
+                }
+                if(i === BUTTONS.RIGHTTHUMB) {
+                    turbo = pressed;
+                    console.log('TURBO: ' + pressed);
+                }
+            }
+
+        }
+        for (i = 0; i < controller.axes.length; i++) {
+            var value = Math.floor(controller.axes[i].toFixed(4) * 30);
+            if (controller.cache.axes[i] !== value) {
+                if(i === AXES.HORIZONTAL.RIGHT) {
+                    steeringObject.value = value;
+
+                    socket.emit('action', steeringObject);
+                }
+                if(i === AXES.VERTICAL.RIGHT) {
+                    var multiplier = 0.9;
+                    if(turbo) {
+                        multiplier = 3;
+                    }
+
+                    if(value === -1) {
+                        speedObject.value = 90;
+                    } else {
+                        if(Math.sign(value) === -1) {
+                            speedObject.value = 110 + Math.abs((value+10) * multiplier);
+                        } else {
+                            speedObject.value = 80 - ((value-10) * multiplier);
+                        }
+                    }
+                    //console.log(speedObject);
+                    socket.emit('action', speedObject);
+                }
+
+                controller.cache.axes[i] = value;
+            }
+        }
+    }
+    requestAnimationFrame(updateStatus);
+}
+
+function connecthandler(e) {
+    controllers[e.gamepad.index] = e.gamepad;
+    requestAnimationFrame(updateStatus);
+}
+function disconnecthandler(e) {
+    delete controllers[e.gamepad.index];
+}
+window.addEventListener("gamepadconnected", connecthandler);
+window.addEventListener("gamepaddisconnected", disconnecthandler);
+
+
+function scangamepads() {
+    var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+    for (var i = 0; i < gamepads.length; i++) {
+        if (gamepads[i]) {
+            if (gamepads[i].index in controllers) {
+                controllers[gamepads[i].index] = gamepads[i];
+            } else {
+                connecthandler({gamepad:gamepads[i]});
+            }
+        }
+    }
+}
+
+if (!haveEvents) {
+    setInterval(scangamepads, 500);
+}
+
+socket.on('status', function (value) {
+    console.log(value);
+});
+
 socket.on('connect', function () {
     var engineLight = $('.icons .engine');
     engineLight.removeClass('on blinking');
-    updatePower(1);
+    console.log('connected');
 });
 
 socket.on('reconnect_error', function () {
     var engineLight = $('.icons .engine');
     engineLight.addClass('on blinking');
-    updatePower(0);
-    updateProgress(0);
 });
 
 socket.on('connect_error', function () {
     var engineLight = $('.icons .engine');
     engineLight.addClass('on blinking');
-    updatePower(0);
-    updateProgress(0);
 });
 
 socket.on('imageUpdate', function( data ) {
     console.log('got image update!');
     videoElement.attr('src', "data:image/jpg;base64," + data);
-});
-
-socket.on('dataReceived', function (data) {
-
-});
-
-socket.on('speedEvent', function (value) {
-    value = value / 100;
-
-    updateProgress(value);
 });
 
 socket.on('brainEvent', function (data) {
@@ -58,9 +184,7 @@ socket.on('brainEvent', function (data) {
     lastTime = now;
 });
 
-socket.on('batteryEvent', function (value) {
-    updatePower(value);
-});
+
 
 socket.on('controlEvent', function (value) {
     if (value) {

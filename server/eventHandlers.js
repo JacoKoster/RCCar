@@ -25,7 +25,7 @@ EventHandlers.prototype = {
         this.arduino.on('open', function() {
             self.arduinoConnected = true;
             Logger.debug('Opened port!');
-            self.sendArduino('init');
+            self.sendArduino('status');
         });
         this.arduino.on('close', function() {
             self.arduinoConnected = false;
@@ -36,8 +36,8 @@ EventHandlers.prototype = {
             if(message.error) {
                 return Logger.error(message);
             }
-
             self.state = message;
+            self.io.emit('status', self.state);
             Logger.debug(JSON.stringify(self.state));
         });
         this.arduino.on('error', function(error) {
@@ -55,8 +55,14 @@ EventHandlers.prototype = {
 
     connected: function (socket) {
         this.allClients.push(socket);
+        socket.emit('status',this.state);
     },
-
+    init: function (socket) {
+        this.sendArduino('init');
+    },
+    status: function (socket) {
+        this.emit('status');
+    },
     disconnected: function (socket) {
         let remoteAddress = socket.conn.remoteAddress;
 
@@ -72,8 +78,6 @@ EventHandlers.prototype = {
     stop: function () {
 //        this.sendArduino("steer 0");
         this.sendArduino('speed 90');
-
-        // socket.server.emit('speedEvent', 0);
     },
     go: function () {
         this.sendArduino('speed 107');
@@ -85,8 +89,6 @@ EventHandlers.prototype = {
 
         this.sendArduino('speed ' + value);
 
-        this.io.emit('speedEvent', parseInt(value));
-
         Logger.debug('setSpeed event handler: ' + value);
     },
     setSteering: function (value) {
@@ -95,7 +97,6 @@ EventHandlers.prototype = {
         }
 
         this.sendArduino('steer ' + value);
-        this.io.emit('steeringEvent', parseInt(value));
 
         Logger.debug('steering event handler: ' + value);
     }

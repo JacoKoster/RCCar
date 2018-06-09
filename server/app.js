@@ -8,7 +8,6 @@ const eventHandlers = require('./eventHandlers.js').getInstance();
 const ffmpeg = require('fluent-ffmpeg');
 
 eventHandlers.io = io;
-let webcamTimerOn = false;
 
 io.on('connection', function (socket) {
     eventHandlers.connected(socket);
@@ -19,19 +18,11 @@ io.on('connection', function (socket) {
     Logger.debug(remoteAddress + ' connected with user-agent ' + userAgent);
     Logger.debug('Total clients: ' + eventHandlers.allClients.length);
 
-    if(!webcamTimerOn) {
-        Logger.info('first client connected, starting cam updater');
-
-        webcamTimerOn = true;
-        webcam();
-    }
-
     socket.on('disconnect', function() {
         eventHandlers.disconnected(socket);
 
         if (eventHandlers.allClients.length === 0) {
             Logger.info('everybody is gone, lets stop doing things...');
-            webcamTimerOn = false;
         }
     });
 
@@ -48,7 +39,7 @@ io.on('connection', function (socket) {
 });
 
 app.get('/', function (req, res) {
-    res.send('<html><video controls src="/camera/1" width="640"></video></html>');
+    res.send('ok');
 });
 
 let ffObj = {};
