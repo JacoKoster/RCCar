@@ -2,16 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>doublemehs</title>
+    <title>Vroom</title>
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no, minimal-ui">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="stylesheets/normalize.css">
     <link rel='stylesheet' href='stylesheets/style.css'/>
 </head>
 <body>
+<div class="signal-container">
+    <img src="images/arrow-left.png" class="icon arrow-left dimmed">
+    <img src="images/emergency.png" class="icon emergency dimmed">
+    <img src="images/arrow-right.png" class="icon arrow-right dimmed">
+</div>
+
 <div class="center-container">
     <div class="speed-meter"></div>
+    <div class="icons">
+        <img src="images/lights.png" class="icon lights dimmed">
+        <img src="images/error.png" class="icon engine on">
+        <img src="images/power.png" class="icon power-button on blinking">
+    </div>
 </div>
+
+
 
 <script src="javascripts/d3.min.js"></script>
 <script src="javascripts/jquery-2.1.1.min.js"></script>

@@ -18,7 +18,7 @@
 #define STEER_MAX 120
 #define MIN_PULSE 1000
 #define MAX_PULSE 2000
-#define CHANGE_DELAY 50
+#define CHANGE_DELAY 20
 
 SerialCommand SCmd;   // The SerialCommand object
 
@@ -48,6 +48,8 @@ void setup()
   SCmd.addCommand( "speed", speed );
   SCmd.addCommand( "PONG", ping ); // returns ping
   SCmd.addDefaultHandler(unrecognized);  // Handler for command that isn't matched
+
+  state["initialized"] = 0;
 }
 
 void loop() {
@@ -70,6 +72,7 @@ void initLights() {
 void initialize() {
   initSteering();
   initMotor();
+  state["initialized"] = 1;
 }
 
 void initMotor() {
@@ -147,7 +150,6 @@ void speed() {
       }
 
       state["speed"] = value;
-
       sendState();
     } else {
       error(400, "Value should be between 0 and 180");

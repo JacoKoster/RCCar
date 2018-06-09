@@ -97,14 +97,6 @@ button, input {
   color: black;
 }
 
-img.power-button {
-  height: 50px;
-  width: 50px;
-  bottom: 25px;
-  right: 25px;
-  position: absolute;
-}
-
 img.stop-button {
   height: 48px;
   width: 48px;
