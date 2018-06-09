@@ -1,12 +1,12 @@
+const ffmpeg = require('fluent-ffmpeg');
+const v4l2camera = require('v4l2camera');
+const sharp = require('sharp');
 const express = require('express');
-const fs = require('fs');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const Logger = require('./logger.js');
 const eventHandlers = require('./eventHandlers.js').getInstance();
-const ffmpeg = require('fluent-ffmpeg');
-
 eventHandlers.io = io;
 
 io.on('connection', function (socket) {
@@ -48,11 +48,40 @@ const availableCams = {
     0 : '/dev/video0',
     1 : '/dev/video1'
 };
+let v412camera = {
+    0 : null,
+    1: null
+};
+
+function startImages(camId) {
+    if(!availableCams[camId]) {
+        return false;
+    }
+    if(v412camera[camId] === null) {
+        v412camera[camId] = new v4l2camera.Camera(availableCams[camId]);
+        v412camera[camId].loop = true;
+        v412camera[camId].configSet({width: 640, height: 480});
+        v412camera[camId].start();
+        v412camera[camId].capture(function loop() {
+            if (v412camera[camId].loop) {
+                v412camera[camId].capture(loop);
+            }
+        });
+    }
+}
+
+function stopImages(camId) {
+    if(v412camera[camId]) {
+        v412camera[camId].stop();
+        v412camera[camId] = null;
+    }
+}
 
 function startVideo(camId) {
     if(!availableCams[camId]) {
         return false;
     }
+    stopImages(camId);
 
     if(!ffObj[camId]) {
         ffObj[camId] = ffmpeg(availableCams[camId])
@@ -91,6 +120,41 @@ function stopVideo(camId) {
     }
     return false;
 }
+
+app.use(function (req, res, next) {
+
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    // Pass to next layer of middleware
+    next();
+});
+
+app.get('/image/:id', function(req,res) {
+    const camId = req.params.id;
+    if(!v412camera[camId]) {
+        startImages(camId);
+    }
+
+    let buf = Buffer(v412camera[camId].toYUYV());
+
+    res.writeHead(200, {
+        "content-type": "image/vnd-raw",
+        "content-length": buf.length,
+    });
+
+    res.end(buf);
+});
 
 app.post('/camera/:id', function (req, res) {
     const camId = req.params.id;

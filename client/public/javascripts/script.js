@@ -132,7 +132,6 @@ function disconnecthandler(e) {
 window.addEventListener("gamepadconnected", connecthandler);
 window.addEventListener("gamepaddisconnected", disconnecthandler);
 
-
 function scangamepads() {
     const gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
     for (let i = 0; i < gamepads.length; i++) {
@@ -172,11 +171,6 @@ socket.on('connect_error', function () {
     engineIcon.addClass('on blinking');
 });
 
-socket.on('imageUpdate', function( data ) {
-    console.log('got image update!');
-    videoElement.attr('src', "data:image/jpg;base64," + data);
-});
-
 socket.on('brainEvent', function (data) {
 
     if(data.camera) {
@@ -190,3 +184,82 @@ socket.on('brainEvent', function (data) {
 
     lastTime = now;
 });
+
+
+
+
+/** needs some cleanup.... **/
+var minmax = function (min, v, max) {
+    return (v < min) ? min : (max < v) ? max : v;
+};
+var yuv2r = function (y, u, v) {
+    return minmax(0, (y + 359 * v) >> 8, 255);
+};
+var yuv2g = function (y, u, v) {
+    return minmax(0, (y + 88 * v - 183 * u) >> 8, 255);
+};
+var yuv2b = function (y, u, v) {
+    return minmax(0, (y + 454 * u) >> 8, 255);
+};
+var yuyv2rgba = function (yuyv, rgba, width, height) {
+    for (var i = 0; i < height; i++) {
+        for (var j = 0; j < width; j += 2) {
+            var index = i * width + j;
+            var y0 = yuyv[index * 2 + 0] << 8;
+            var u = yuyv[index * 2 + 1] - 128;
+            var y1 = yuyv[index * 2 + 2] << 8;
+            var v = yuyv[index * 2 + 3] - 128;
+            rgba[index * 4 + 0] = yuv2r(y0, u, v);
+            rgba[index * 4 + 1] = yuv2g(y0, u, v);
+            rgba[index * 4 + 2] = yuv2b(y0, u, v);
+            rgba[index * 4 + 3] = 255;
+            rgba[index * 4 + 4] = yuv2r(y1, u, v);
+            rgba[index * 4 + 5] = yuv2g(y1, u, v);
+            rgba[index * 4 + 6] = yuv2b(y1, u, v);
+            rgba[index * 4 + 7] = 255;
+        }
+    }
+    return rgba;
+};
+var rgb2rgba = function (rgb, rgba, width, height) {
+    for (var i = 0; i < height; i++) {
+        for (var j = 0; j < width; j++) {
+            var index = i * width + j;
+            rgba[index * 4 + 0] = rgb[index * 3 + 0];
+            rgba[index * 4 + 1] = rgb[index * 3 + 1];
+            rgba[index * 4 + 2] = rgb[index * 3 + 2];
+            rgba[index * 4 + 3] = 255;
+        }
+    }
+    return rgba;
+};
+var cameraObjects = {
+    0 : {},
+    1 : {}
+};
+
+cameraObjects[0].context = document.getElementById("cam0").getContext("2d");
+cameraObjects[0].image = cameraObjects[0].context.createImageData(640, 480);
+cameraObjects[1].context = document.getElementById("cam1").getContext("2d");
+cameraObjects[1].image = cameraObjects[1].context.createImageData(640, 480);
+
+function loadCameras() {
+    loadCamera(0);
+    loadCamera(1);
+
+    setTimeout(loadCameras, 100);
+}
+
+function loadCamera(camId) {
+    let req = new XMLHttpRequest();
+    let image = cameraObjects[camId].image;
+    req.responseType = "arraybuffer";
+    req.addEventListener("load", function (ev) {
+        let yuyv = new Uint8Array(req.response);
+        yuyv2rgba(yuyv, image.data, image.width, image.height);
+        cameraObjects[camId].context.putImageData(image, 0, 0);
+    }, false);
+    req.open("GET", carServer + "/image/"+ camId +"?cache=" + Date.now(), true);
+    req.send();
+}
+loadCameras();

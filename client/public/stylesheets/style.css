@@ -77,8 +77,11 @@ img.icon {
   transform: rotate(180deg);
 }
 
+canvas {
+  float:left;
+}
 .speed-meter {
-  margin: 0 auto;
+  float:left;
   width: 240px;
 }
 
